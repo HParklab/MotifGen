@@ -16,10 +16,7 @@ ntypes = len(TYPES)
 Ymode = 'node'
 n_l1out = 8 # assume important physical properties e.g. dipole, hydrophobicity et al
 nGMM = 3 # num gaussian functions
-dropout = 0.2
 NLAYERS=10
-w_reg = 1e-5
-LR = 1.0e-4
 
 params_loader = {
           'shuffle': False,
@@ -33,7 +30,7 @@ set_params = {
     'ball_radius'  : 12.0,
     'edgemode'     : 'dist',
     "xyz_as_bb"    : True,
-    "upsample"     : upsample_category,
+    #"upsample"     : upsample_category,
     "randomize"    : 0.2, # Ang, pert the rest
     "randomize_lig": 0.5, # Ang, pert the motif coord! #reduce noise...
     'debug'        : ('-debug' in sys.argv),
@@ -41,7 +38,13 @@ set_params = {
     }
 
 accum       = 1
-modelname   = 'original'
+mode = sys.argv[1]
+
+if mode == 'peptide':
+    modelname   = 'peptide'
+else:
+    modelname   = 'original'
+    
 silent      = False
 
 def load_params(rank):
@@ -52,7 +55,7 @@ def load_params(rank):
                                    l0_out_features=ntypes, #category only
                                    l1_out_features=n_l1out,
                                    ntypes=ntypes,
-                                   drop_out=dropout,
+                                   drop_out=0.0,
                                    nGMM = nGMM )
     
     model.to(device)

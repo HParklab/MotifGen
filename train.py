@@ -45,9 +45,15 @@ train_set = Dataset(np.load("data/train_datas.npy"), **set_params)
 valid_set = Dataset(np.load("data/valid_datas.npy"), **set_params)
 max_epochs  = 400
 accum       = 1
-modelname   = sys.argv[1]
 retrain     = False
 silent      = False
+
+mode = sys.argv[1]
+
+if mode == 'peptide':
+    modelname   = 'peptide'
+else:
+    modelname   = 'original'
 
 #freeze_schedule
 # ~155: none
