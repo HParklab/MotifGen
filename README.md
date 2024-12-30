@@ -1,0 +1,2 @@
+# MotifGen
+publication version
