@@ -37,7 +37,7 @@ MotifGen can predict ligand binding sites using a preprocessed motif profile.
 ### Steps Overview
 1. **Preprocessing(add hydrogen on PDB)**
 2. **Feature extraction** 
-3. **Run MotifNet** (GPU-accelerated inference)
+3. **Run MotifGen** (GPU-accelerated inference)
 4. **Predict ligand binding sites**
 
 ---
