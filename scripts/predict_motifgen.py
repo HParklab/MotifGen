@@ -44,6 +44,7 @@ def load_params(rank, mode):
     
     model_name = "model.pkl" if mode == "original" else "model_pep.pkl"
     model_path = os.path.join(os.path.dirname(__file__), "../params", model_name)
+    print("==mode===", mode)
     print("model_path", model_path)
     device = torch.device("cuda:%d"%rank if (torch.cuda.is_available()) else "cpu")
     print("model device", device)
