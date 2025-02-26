@@ -271,9 +271,14 @@ def fa2gentype(fats):
     return gents
 
 def defaultparams(aa,
-                  datapath='/applic/rosetta/current/database/chemical/residue_type_sets/fa_standard/residue_types',
+                  datapath=None,
                   extrapath=''):
     # first search through Rosetta database
+    if datapath is None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # script_dir/MotifGen/data/params/rosetta_residue_params/
+        datapath = os.path.join(script_dir, '../../../', 'params', 'rosetta_residue_params')
+
     p = None
     if aa in AMINOACID:
         p = '%s/l-caa/%s.params'%(datapath,aa)

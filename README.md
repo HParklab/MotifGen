@@ -25,6 +25,7 @@ Install the required libraries:
 pip install torch==1.11.0+cu113 --index-url https://download.pytorch.org/whl/cu113
 pip install dgl-cu113==0.9.1.post1 dglgo -f https://data.dgl.ai/wheels/repo.html
 pip install e3nn==0.5.0
+conda install -c bioconda tmalign
 pip install -e .
 ```
 
@@ -99,7 +100,7 @@ python scripts/site_predictor.py $prefix
 
 ---
 
-## Example Usage
+## Example Usage (Application 1)
 Here’s an example command to run the full pipeline on `148lE.pdb`:
 
 ```bash

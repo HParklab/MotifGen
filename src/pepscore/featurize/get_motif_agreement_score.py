@@ -4,18 +4,8 @@ import os
 from peptide_motifs import get_interaction_from_model
 
 from scipy.spatial import distance_matrix
-
-"""
-receptor_pdb = sys.argv[1] #receptor.pdb #motifnet was runned with this pdb
-motifnet_output = sys.argv[2] # motifpep_output.npz 
-complex_pdb = sys.argv[3] #./renum_model_complex.pdb
-"""
-receptor_pdb = "/home/seeun/MotifGen/example/pepscore/receptor.pdb"
-motifnet_output = "/home/seeun/MotifGen/example/pepscore/motifpep_output.npz"
-complex_pdb = "/home/seeun/MotifGen/example/pepscore/renum_model_complex.pdb"
-
 import subprocess as sp
-
+import argparse
 
 class Atom:
     def __init__(self):
@@ -297,30 +287,47 @@ def get_motifnet_info(motifnet_output_dict, pdb_motif_dict):
     motifagreement_score = np.array([score_dict[f"{i}_scaled"] for i in range(1, 6)])
     return motifagreement_score
 
-#motifpep prediction
-motif_pred, n_grid = extract_motifs_from_manual(motifnet_output, BEST_P_CUTS)
+def main(args):
+    receptor_pdb = args.receptor_pdb
+    motifnet_output = args.motifnet_output
+    complex_pdb = args.complex_pdb
+    output_dir = args.output_dir
 
-sup_model_pdb = gen_superposed_model(complex_pdb, receptor_pdb)
-#first get the interactions from model pdb
-xyzs, cats = get_interaction_from_model(sup_model_pdb, ligchain="B") #from main
-pred_model_dict = {}
-for cat, xyz in zip(cats, xyzs):
-    pred_model_dict.setdefault(cat, []).append(xyz)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-#compare motif_pred and xyzs -> get motifagreement_score
-score_dict = get_motifnet_info(motif_pred, pred_model_dict )
+    motif_pred, n_grid = extract_motifs_from_manual(motifnet_output, BEST_P_CUTS)
 
-#save as motif.npy
-num_contact = get_contact(complex_pdb)
-print("num_contact", num_contact)
+    sup_model_pdb = gen_superposed_model(complex_pdb, receptor_pdb)
 
-#add num_contact to score_dict as a array
-num_contact  = np.array([num_contact])
-score_dict = np.concatenate((score_dict, num_contact))
+    xyzs, cats = get_interaction_from_model(sup_model_pdb, ligchain="B")
+    pred_model_dict = {}
+    for cat, xyz in zip(cats, xyzs):
+        pred_model_dict.setdefault(cat, []).append(xyz)
 
-#save as motif.npy order 1_scaled, 2_scaled, 3_scaled, 4_scaled, 5_scaled, num_contact
-np.save("motif.npy", score_dict)
+    score_dict = get_motifnet_info(motif_pred, pred_model_dict)
 
-#load and check
-loaded_score = np.load("motif.npy", allow_pickle=True)
-print("loaded_score", loaded_score)
+    num_contact = get_contact(complex_pdb)
+    print("num_contact", num_contact)
+
+    num_contact = np.array([num_contact])
+    score_dict = np.concatenate((score_dict, num_contact))
+
+    output_file = os.path.join(output_dir, "motifnet.npy")
+    np.save(output_file, score_dict)
+
+    loaded_score = np.load(output_file, allow_pickle=True)
+    print("loaded_score", loaded_score)
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Get motif agreement score from motifnet output.")
+    parser.add_argument("--receptor_pdb", type=str, required=True, help="Path to receptor PDB file.")
+    parser.add_argument("--motifnet_output", type=str, required=True, help="Path to motifnet output file (npz format).")
+    parser.add_argument("--complex_pdb", type=str, required=True, help="Path to complex PDB file.")
+    parser.add_argument("--output_dir", type=str, required=True, help="Directory to save output motifnet.npy file.")
+    args = parser.parse_args()
+
+    main(args)
+

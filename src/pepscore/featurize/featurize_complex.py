@@ -4,6 +4,7 @@ from pathlib import Path
 from scipy.spatial.distance import cdist
 import numpy as np
 import torch
+import argparse
 from pdb_utils import PDB 
 from seq_utils import AA_one_hot, generate_pep_position_encoding
 
@@ -283,30 +284,36 @@ def process_feature(pdb_path, npz_path, rec_esm_pt, pep_esm_pt):
     return rec_node_feat, pep_node_feat, edge_feat
 
 
+def main(args):
+    pdb_path = Path(args.pdb_path)
+    npz_path = Path(args.npz_path)
+    rec_esm_pt = Path(args.rec_esm_pt)
+    pep_esm_pt = Path(args.pep_esm_pt)
+    output_dir = Path(args.output_dir)
 
+    # output 디렉토리 생성 (없으면)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-ROOT_DIR = "../../../example/pepscore"
-pdb_path = Path(ROOT_DIR, "renum_model_complex.pdb")
-npz_path = Path(ROOT_DIR, "model_confidence.npz")
-rec_esm_pt = Path(ROOT_DIR, "rec_esm.pt")
-pep_esm_pt = Path(ROOT_DIR, "pep_esm.pt")
+    # feature 추출
+    rec_node_feat, pep_node_feat, edge_feat = process_feature(pdb_path, npz_path, rec_esm_pt, pep_esm_pt)
 
-rec_node_feat, pep_node_feat, edge_feat = process_feature(pdb_path, npz_path, rec_esm_pt, pep_esm_pt)
-print("rec_node_feat", rec_node_feat.shape)
-print("pep_node_feat", pep_node_feat.shape)
-print("edge_feat", edge_feat.shape)
+    print("rec_node_feat", rec_node_feat.shape)
+    print("pep_node_feat", pep_node_feat.shape)
+    print("edge_feat", edge_feat.shape)
 
-#save as rec_node_feat.npy
-#save as pep_node_feat.npy
-#save as edge_feat.npy
+    # 파일 저장: rec_node_feat.npy, pep_node_feat.npy, edge_feat.npy
+    np.save(output_dir / "rec_node_feat.npy", rec_node_feat)
+    np.save(output_dir / "pep_node_feat.npy", pep_node_feat)
+    np.save(output_dir / "edge_feat.npy", edge_feat)
+    print("output_path: ", output_dir)
+    print("Features saved successfully!")
 
-# rec_node_feat 저장
-np.save(Path(ROOT_DIR, "rec_node_feat.npy"), rec_node_feat)
-
-# pep_node_feat 저장
-np.save(Path(ROOT_DIR, "pep_node_feat.npy"), pep_node_feat)
-
-# edge_feat 저장
-np.save(Path(ROOT_DIR, "edge_feat.npy"), edge_feat)
-
-print("Features saved successfully!")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Extract features from PDB and NPZ files and save as .npy files.")
+    parser.add_argument("--pdb_path", type=str, required=True, help="Path to the pdb file (e.g., renum_model_complex.pdb).")
+    parser.add_argument("--npz_path", type=str, required=True, help="Path to the model confidence npz file.")
+    parser.add_argument("--rec_esm_pt", type=str, required=True, help="Path to rec_esm.pt file.")
+    parser.add_argument("--pep_esm_pt", type=str, required=True, help="Path to pep_esm.pt file.")
+    parser.add_argument("--output_dir", type=str, required=True, help="Directory to save output .npy files.")
+    args = parser.parse_args()
+    main(args)
