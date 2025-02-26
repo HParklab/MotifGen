@@ -42,8 +42,6 @@ MotifGen can predict ligand binding sites using a preprocessed motif profile.
 3. **Run MotifGen** (GPU-accelerated inference)
 4. **Predict ligand binding sites**
 
----
-
 
 ### **Step 1: Prepare Input PDB File**
 **Input Requirement:** PDB file with **all hydrogens attached** (heteroatoms will be ignored).  
@@ -112,9 +110,19 @@ python scripts/predict_motifgen.py $prefix.lig.npz original
 python scripts/site_predictor.py $prefix
 ```
 
+---
+
 
 ### Application 2: **MotifPepScore using MotifGen (Peptide Version)**
-MotifPepScore is a **scoring network** designed to distinguish peptide binders from non-binders by integrating **MotifGen predictions** with confidence metrics from **AlphaFold2 (AF2)**.
+This repository provides a two-stage pipeline to identify peptide binders by integrating MotifGen predictions with AlphaFold2 (AF2) confidence metrics (and ESM features). The workflow is divided into two main applications:
+
+- Application 2-1: **MotifGen (Peptide Version)**  
+- Application 2-2: **MotifPepScore**  
+
+---
+
+
+### Application 2-1: **MotifGen (Peptide Version)**  
 
 #### Steps Overview
 1. **Preprocessing (add hydrogen to PDB)** – same as Application 1  
@@ -122,7 +130,6 @@ MotifPepScore is a **scoring network** designed to distinguish peptide binders f
 3. **Run MotifGen (peptide version)**  
 4. **Output generation**
 
----
 
 ### **Step 1: Preprocessing**
 Identical to Application 1. Make sure your PDB is fully hydrogenated (absolute path when running Chimera). Example:
@@ -196,3 +203,60 @@ python scripts/predict_motifgen.py $prefix.lig.npz peptide
 # 4) Visualize or Extract Motif Predictions
 python scripts/visualize/visualize_output.py $prefix.score.npz
 ```
+
+---
+
+### Application 2-2: **MotifPepScore using MotifGen (Peptide Version)**
+MotifPepScore is a scoring network designed to distinguish peptide binders from non-binders by integrating:
+
+- MotifGen Predictions (from Application 2-1)
+- AF2 Confidence Metrics
+- ESM Features.
+
+### Required Files & Directories
+- **Receptor PDB:** `./example/pepscore/receptor.pdb`
+- **MotifGen (peptide version) Output:** `./example/pepscore/receptor.score.npz`  
+  *(Generated from running MotifGen on the receptor PDB)*
+- **Complex PDB:** `./example/pepscore/renum_model_complex.pdb`  
+  *(Ensure protein is chain A and peptide is chain B.)*
+- **AF2 Confidence NPZ:** `./example/pepscore/model_confidence.npz`
+- **ESM Output:**  
+  - **Receptor:** `./example/pepscore/rec_esm.pt`  
+  - **Peptide:** `./example/pepscore/pep_esm.pt`
+- **Output Directory:** `./example/pepscore/`
+
+
+
+### Step-by-Step Instructions
+
+1. **Prepare MotifGen Output**  
+   Ensure you have generated MotifGen Output by running the MotifGen (Peptide Version) on Receptor PDB.
+
+2. **Compute Motif Agreement Score**  
+   Calculate the motif agreement score for the predicted complex:
+   ```bash
+   python src/pepscore/featurize/get_motif_agreement_score.py \
+     --receptor_pdb "./example/pepscore/receptor.pdb" \
+     --motifnet_output "./example/pepscore/receptor.score.npz" \
+     --complex_pdb "./example/pepscore/renum_model_complex.pdb" \
+     --output_dir "./example/pepscore/"
+   ```
+3. **Generate Complex Features**
+   Create the features required as input for the PepScore network:
+   ```bash
+   python src/pepscore/featurize/featurize_complex.py \
+  --pdb_path "renum_model_complex.pdb" \
+  --npz_path "./example/pepscore/model_confidence.npz" \
+  --rec_esm_pt "./example/pepscore/rec_esm.pt" \
+  --pep_esm_pt "./example/pepscore/pep_esm.pt" \
+  --output_dir "./example/pepscore/"
+  ```
+
+4. **Run PepScore Prediction**
+   Finally, run the PepScore network. You can choose a different checkpoint from the range `./params/pepscore_0.pt` to `./params/pepscore_4.pt` as needed:
+   ```bash
+   python scripts/predict_pepscore.py --checkpoint "./params/pepscore_1.pt" --input "./example/pepscore/"
+   ```
+
+---
+
