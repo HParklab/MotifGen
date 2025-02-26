@@ -4,16 +4,27 @@ MotifGen is a deep learning model designed to predict binding motifs solely from
 
 ---
 
+## Table of Contents
+- [Installation Guide](#installation-guide)
+  - [1. Install UCSF Chimera](#1-install-ucsf-chimera)
+  - [2. Set Up the Environment](#2-set-up-the-environment)
+- [Applications](#applications)
+  - [Application 1: Motif-Site Prediction](#application-1-motif-site-prediction)
+  - [Application 2: MotifPepScore using MotifGen (Peptide Version)](#application-2-motifpepscore-using-motifgen-peptide-version)
+    - [Application 2-1: MotifGen (Peptide Version)](#application-2-1-motifgen-peptide-version)
+    - [Application 2-2: MotifPepScore](#application-2-2-motifpepscore)
+- [Additional Notes](#additional-notes)
+
+---
+
 ## Installation Guide
 
-### 1. Install UCSF Chimera (Required for Hydrogen Addition)
+### 1. Install UCSF Chimera
 Download and install UCSF Chimera from the official website:  
 🔗 [UCSF Chimera Download](https://www.cgl.ucsf.edu/chimera/download.html)
 
-
 ### 2. Set Up the Environment
 Run the following commands to install dependencies and set up the `motifgen` environment:
-
 ```bash
 conda env create -f environment.yaml
 conda activate motifgen
@@ -96,7 +107,6 @@ python scripts/site_predictor.py $prefix
 2. **Property Predictions**: `$prefix.log`
    - Contains predicted **logP** and **TPSA** values.
 
----
 
 ## Example Usage (Application 1)
 Here’s an example command to run the full pipeline on `148lE.pdb`:
@@ -206,7 +216,7 @@ python scripts/visualize/visualize_output.py $prefix.score.npz
 
 ---
 
-### Application 2-2: **MotifPepScore using MotifGen (Peptide Version)**
+### Application 2-2: **MotifPepScore**
 MotifPepScore is a scoring network designed to distinguish peptide binders from non-binders by integrating:
 
 - MotifGen Predictions (from Application 2-1)
@@ -245,12 +255,12 @@ MotifPepScore is a scoring network designed to distinguish peptide binders from 
    Create the features required as input for the PepScore network:
    ```bash
    python src/pepscore/featurize/featurize_complex.py \
-  --pdb_path "renum_model_complex.pdb" \
-  --npz_path "./example/pepscore/model_confidence.npz" \
-  --rec_esm_pt "./example/pepscore/rec_esm.pt" \
-  --pep_esm_pt "./example/pepscore/pep_esm.pt" \
-  --output_dir "./example/pepscore/"
-  ```
+   --pdb_path "renum_model_complex.pdb" \
+   --npz_path "./example/pepscore/model_confidence.npz" \
+   --rec_esm_pt "./example/pepscore/rec_esm.pt" \
+   --pep_esm_pt "./example/pepscore/pep_esm.pt" \
+   --output_dir "./example/pepscore/"
+   ```
 
 4. **Run PepScore Prediction**
    Finally, run the PepScore network. You can choose a different checkpoint from the range `./params/pepscore_0.pt` to `./params/pepscore_4.pt` as needed:
