@@ -13,6 +13,7 @@ MotifGen is a deep learning model designed to predict binding motifs solely from
   - [Application 2: MotifPepScore using MotifGen (Peptide Version)](#application-2-motifpepscore-using-motifgen-peptide-version)
     - [Application 2-1: MotifGen (Peptide Version)](#application-2-1-motifgen-peptide-version)
     - [Application 2-2: MotifPepScore](#application-2-2-motifpepscore)
+  - [Application 3: A Simple Ligand-screning]
 - [Additional Notes](#additional-notes)
 
 ---
@@ -269,4 +270,23 @@ MotifPepScore is a scoring network designed to distinguish peptide binders from 
    ```
 
 ---
+
+### Application 3: **A Simple Ligand Screening**
+A simple application for ligand screening using the MotifGen output. More advance version will be deposited separately.
+
+### Required Files & Directories
+- MotifGen output (.score.npz)
+- mol2 files (a text file containing list of mol2 files at every row)
+
+### Step-by-Step Instructions
+
+1. **Prepare MotifGen Output**  
+   Ensure you have generated MotifGen Output by running the MotifGen (Peptide Version) on Receptor PDB.
+
+2. **Run Binder likelihood Prediction**
+   ```bash
+   python scripts/ligand_screen.py [npz] [mol2files.txt]
+   ```
+
+
 
